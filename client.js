@@ -30,14 +30,19 @@ window.__ModuleLoader__.load({
     }
 
     const CSS = [
-      '.gmcp-seat{position:fixed;right:12px;bottom:30px;z-index:64;display:flex;align-items:center;justify-content:center;pointer-events:none}',
-      '.gmcp-badge{position:relative;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:1px solid var(--dsw-alias-border-l1);border-radius:10px;background:var(--dsw-alias-bg-overlay);box-shadow:0 3px 12px rgba(0,0,0,.2);cursor:default;pointer-events:auto;outline:none;transition:transform .15s ease,box-shadow .15s ease}',
-      '.gmcp-badge:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.28)}',
+      '.gmcp-seat{position:fixed;left:0;top:0;z-index:64;display:flex;align-items:center;justify-content:center;pointer-events:none}',
+      '.gmcp-badge{position:relative;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:1px solid var(--dsw-alias-border-l1);border-radius:10px;background:var(--dsw-alias-bg-overlay);box-shadow:0 3px 12px rgba(0,0,0,.2);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;pointer-events:auto;outline:none;transition:transform .15s ease,box-shadow .15s ease}',
+      '.gmcp-badge:not(.is-dragging):hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.28)}',
+      '.gmcp-badge.is-dragging{cursor:grabbing;transform:none;box-shadow:0 8px 22px rgba(0,0,0,.32);transition:none}',
       '.gmcp-badge:focus-visible{box-shadow:0 0 0 2px var(--dsw-alias-brand-primary)}',
       '.gmcp-mark{display:block;width:25px;height:16px}',
       '.gmcp-tag{position:absolute;right:-7px;bottom:-6px;box-sizing:border-box;height:12px;padding:0 3px;border-radius:5px;background:linear-gradient(135deg,#478CBF,#6A46B8);color:#fff;font:700 7px/12px ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.06em;box-shadow:0 0 0 1px var(--dsw-alias-bg-overlay);pointer-events:none}',
       '.gmcp-tip{position:absolute;right:-4px;bottom:calc(100% + 9px);z-index:2;white-space:nowrap;padding:5px 9px;border:1px solid var(--dsw-alias-border-l1);border-radius:8px;background:var(--dsw-alias-bg-overlay);color:var(--dsw-alias-label-primary);font:500 12px/17px ui-sans-serif,system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.24);pointer-events:none;animation:gmcp-tip-in .14s ease-out both}',
       '.gmcp-tip::after{content:"";position:absolute;right:14px;top:100%;width:7px;height:7px;margin-top:-4px;transform:rotate(45deg);border-right:1px solid var(--dsw-alias-border-l1);border-bottom:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-overlay)}',
+      '.gmcp-tip[data-place="below"]{bottom:auto;top:calc(100% + 9px)}',
+      '.gmcp-tip[data-place="below"]::after{top:auto;bottom:100%;margin-top:0;margin-bottom:-4px;transform:rotate(225deg)}',
+      '.gmcp-tip[data-align="start"]{right:auto;left:-4px}',
+      '.gmcp-tip[data-align="start"]::after{right:auto;left:14px}',
       '@keyframes gmcp-tip-in{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}',
       '@media (prefers-reduced-motion:reduce){.gmcp-badge{transition:none}.gmcp-tip{animation:none}}',
     ].join('')
@@ -131,16 +136,134 @@ window.__ModuleLoader__.load({
       return status
     }
 
+    const BADGE_SIZE = 32
+    const POSITION_KEY = 'dsh-godot-mcp-status:position'
+    const DRAG_THRESHOLD = 4
+
+    function clampPosition(x, y) {
+      const width = typeof window === 'undefined' ? 1024 : window.innerWidth
+      const height = typeof window === 'undefined' ? 768 : window.innerHeight
+      const maxX = Math.max(0, width - BADGE_SIZE)
+      const maxY = Math.max(0, height - BADGE_SIZE)
+      return {
+        x: Math.min(Math.max(0, Math.round(x)), maxX),
+        y: Math.min(Math.max(0, Math.round(y)), maxY),
+      }
+    }
+
+    /** The original resting place: 12 px from the right and 30 px from the bottom. */
+    function defaultPosition() {
+      const width = typeof window === 'undefined' ? 1024 : window.innerWidth
+      const height = typeof window === 'undefined' ? 768 : window.innerHeight
+      return clampPosition(width - BADGE_SIZE - 12, height - BADGE_SIZE - 30)
+    }
+
+    function loadPosition() {
+      try {
+        const raw = window.localStorage.getItem(POSITION_KEY)
+        if (raw === null) return null
+        const saved = JSON.parse(raw)
+        if (saved === null || typeof saved !== 'object') return null
+        if (typeof saved.x !== 'number' || typeof saved.y !== 'number') return null
+        if (!Number.isFinite(saved.x) || !Number.isFinite(saved.y)) return null
+        return clampPosition(saved.x, saved.y)
+      } catch {
+        return null
+      }
+    }
+
+    function savePosition(position) {
+      try {
+        window.localStorage.setItem(POSITION_KEY, JSON.stringify(position))
+      } catch {
+        /* storage can be full or blocked; the badge still drags for this session */
+      }
+    }
+
     function GodotMcpBadge(props) {
       const t = props !== null && typeof props.t === 'function' ? props.t : boundT !== null ? boundT : (key) => key
       const status = useStatus()
       const [hovered, setHovered] = React.useState(false)
+      const [position, setPosition] = React.useState(() => loadPosition() || defaultPosition())
+      const [dragging, setDragging] = React.useState(false)
+      const dragRef = React.useRef(null)
+
+      React.useEffect(() => {
+        function onResize() {
+          setPosition((current) => clampPosition(current.x, current.y))
+        }
+        window.addEventListener('resize', onResize)
+        return () => window.removeEventListener('resize', onResize)
+      }, [])
+
+      function onPointerDown(event) {
+        if (event.button !== undefined && event.button !== 0) return
+        dragRef.current = {
+          pointerId: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+          originX: position.x,
+          originY: position.y,
+          x: position.x,
+          y: position.y,
+          moved: false,
+        }
+        const element = event.currentTarget
+        if (typeof element.setPointerCapture === 'function') {
+          try {
+            element.setPointerCapture(event.pointerId)
+          } catch {
+            /* pointer capture is best-effort */
+          }
+        }
+      }
+
+      function onPointerMove(event) {
+        const drag = dragRef.current
+        if (drag === null || drag.pointerId !== event.pointerId) return
+        // A released button without a pointerup (capture lost) ends the drag here.
+        if (typeof event.buttons === 'number' && event.buttons === 0) {
+          dragRef.current = null
+          setDragging(false)
+          return
+        }
+        const dx = event.clientX - drag.startX
+        const dy = event.clientY - drag.startY
+        if (drag.moved !== true && Math.abs(dx) + Math.abs(dy) < DRAG_THRESHOLD) return
+        if (drag.moved !== true) {
+          drag.moved = true
+          setDragging(true)
+          setHovered(false)
+        }
+        const next = clampPosition(drag.originX + dx, drag.originY + dy)
+        drag.x = next.x
+        drag.y = next.y
+        setPosition(next)
+      }
+
+      function onPointerEnd(event) {
+        const drag = dragRef.current
+        if (drag === null || drag.pointerId !== event.pointerId) return
+        dragRef.current = null
+        const element = event.currentTarget
+        if (typeof element.releasePointerCapture === 'function') {
+          try {
+            element.releasePointerCapture(event.pointerId)
+          } catch {
+            /* the capture may already be gone */
+          }
+        }
+        setDragging(false)
+        if (drag.moved === true) savePosition({ x: drag.x, y: drag.y })
+      }
 
       if (status === null || status.connected !== true) return null
 
       const names = status.servers.map((server) => server.name)
       const single = names.length === 1 ? names[0] : ''
       const label = single !== '' && single.toLowerCase() === 'godot' ? t('connectedGodot') : t('connectedMcp')
+      const tipBelow = position.y < 76
+      const tipFlip = position.x < 150
 
       return h(
         React.Fragment,
@@ -148,14 +271,19 @@ window.__ModuleLoader__.load({
         h('style', { 'data-godot-mcp-status': 'styles' }, CSS),
         h(
           'div',
-          { className: 'gmcp-seat' },
+          { className: 'gmcp-seat', style: { left: position.x + 'px', top: position.y + 'px' } },
           h(
             'div',
             {
-              className: 'gmcp-badge',
+              className: dragging ? 'gmcp-badge is-dragging' : 'gmcp-badge',
               role: 'status',
               'aria-label': label,
               tabIndex: 0,
+              onPointerDown,
+              onPointerMove,
+              onPointerUp: onPointerEnd,
+              onPointerCancel: onPointerEnd,
+              onLostPointerCapture: onPointerEnd,
               onMouseEnter: () => setHovered(true),
               onMouseLeave: () => setHovered(false),
               onFocus: () => setHovered(true),
@@ -163,7 +291,18 @@ window.__ModuleLoader__.load({
             },
             h(GodotMark),
             h('span', { className: 'gmcp-tag', 'aria-hidden': 'true' }, 'MCP'),
-            hovered ? h('div', { className: 'gmcp-tip', role: 'tooltip' }, label) : null,
+            hovered && !dragging
+              ? h(
+                  'div',
+                  {
+                    className: 'gmcp-tip',
+                    role: 'tooltip',
+                    'data-place': tipBelow ? 'below' : undefined,
+                    'data-align': tipFlip ? 'start' : undefined,
+                  },
+                  label,
+                )
+              : null,
           ),
         ),
       )

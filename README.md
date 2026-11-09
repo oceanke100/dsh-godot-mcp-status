@@ -4,6 +4,7 @@ A DSH Web UI plugin: while DeepSeek Harness is connected to a Godot MCP server,
 the Godot logo with an **MCP** corner tag stays in the bottom-right of the app.
 Nothing is shown while the connection is absent. Hovering or focusing the tile
 raises the bubble **Connected to Godot MCP** (中文界面：**已连接上Godot MCP**).
+Hold and drag the tile to move it anywhere in the window.
 
 It answers one question at a glance: is the editor's MCP server live right now,
 so the agent can actually use `mcp__godot__*` tools?
@@ -66,8 +67,13 @@ into pointer events.
 
 - The badge follows every MCP server in the profile; it names Godot specially
   when the connected server is `godot`.
-- Placement is `right: 12px; bottom: 30px`, clear of the bottom-right corner
-  controls used by other overlay plugins.
+- Drag the tile to move it; the drop position is clamped to the window and saved
+  in `localStorage` under `dsh-godot-mcp-status:position`, so it survives a page
+  reload of the same origin. Dragging 4 px or less is treated as a click, so the
+  hover bubble still works.
+- Default placement is 12 px from the right and 30 px from the bottom, clear of
+  the bottom-right corner controls used by other overlay plugins. The bubble flips
+  below the tile near the top edge and anchors from the left near the left edge.
 - The in-app mark is the official Godot logo, inlined as SVG paths. The Godot
   logo is by Andrea Calabró and the Godot Engine contributors, licensed under
   [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); the logo is a
@@ -82,7 +88,7 @@ into pointer events.
 
 连上 Godot MCP 后，主界面右下角出现一个 32px 的 Godot 图标（官方 logo，白色描边
 + 引擎蓝），右下角带「MCP」角标，鼠标悬停弹出气泡「已连接上Godot MCP」；没连上时
-完全不显示。
+完全不显示。按住图标可以拖到窗口任意位置，松手后位置记在 localStorage 里。
 
 Godot logo 由 Andrea Calabró 与 Godot Engine 贡献者创作，采用 CC BY 4.0 许可，
 是 Godot Foundation 的商标，此处仅用于标识 Godot MCP 连接；插件自身代码为 MIT。

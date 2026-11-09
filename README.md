@@ -1,7 +1,5 @@
 # dsh-godot-mcp-status · Godot MCP 连接状态
 
-> 每一节先中文、后 English，不用翻到最底部。Each section is 中文 first, English
-> second — no need to scroll to the end.
 
 ## 是什么 / What it is
 
@@ -88,18 +86,6 @@ endpoint is listening on 9080–9083, the badge appears with a gray dot and the 
 also runs only when a configured server's name or URL mentions `godot`, so an
 unrelated Godot editor on the machine never produces a badge.
 
-## 文件 / Files
-
-| 文件 File | 作用 | Role |
-|---|---|---|
-| `index.js` | Host 半边：状态路由与检测 | Host row: state route and detection |
-| `client.js` | 客户端模块：浮层席位、Godot logo、气泡 | Client module: overlay seat, Godot logo, bubble |
-| `cordis.patch.yml` | 插入 Host 行 | Inserts the Host row |
-| `locale/*.json` | 插件管理器的标题/描述与角标文案 | Plugin Manager title/description and badge text |
-| `icon.svg` | 插件图标 | Package icon |
-| `docs/index.json` | GitHub Pages 上的市场索引，发布前填占位符 | Market index served by GitHub Pages |
-| `docs/README.md` | 索引的填写与部署说明 | How to fill and deploy that index |
-| `PUBLISHING.md` | 三层发布流程（GitHub / npm / 索引） | The three publishing layers, in order |
 
 ## 环境要求 / Requirements
 
@@ -140,10 +126,3 @@ Godot Foundation and is used here only to identify a Godot MCP connection (see
 <https://godotengine.org/press>). This plugin's own code and artwork composition are
 MIT licensed (see `LICENSE`).
 
-## 发布 / Publishing
-
-三层分工、版本线、每次发版的固定顺序都在 `PUBLISHING.md`；自带索引的填写与 GitHub Pages
-部署在 `docs/README.md`。
-
-The three layers, the version line and the per-release order are in `PUBLISHING.md`;
-filling in and deploying this repository's own index is in `docs/README.md`.

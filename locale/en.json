@@ -1,0 +1,8 @@
+{
+  "meta": {
+    "title": "Godot MCP status",
+    "description": "Shows a Godot icon with an MCP corner tag in the app while a Godot MCP server is connected, and nothing while it is not. Hover the icon for the connection hint."
+  },
+  "connectedGodot": "Connected to Godot MCP",
+  "connectedMcp": "Connected to MCP"
+}

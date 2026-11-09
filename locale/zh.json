@@ -1,0 +1,8 @@
+{
+  "meta": {
+    "title": "Godot MCP 连接状态",
+    "description": "连接上 Godot MCP 后，在主界面右下角显示带 MCP 角标的 Godot 图标，悬停显示连接提示；未连接时不显示。"
+  },
+  "connectedGodot": "已连接上Godot MCP",
+  "connectedMcp": "已连接上 MCP"
+}

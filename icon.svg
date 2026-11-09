@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="tile" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#478CBF"/>
+      <stop offset="100%" stop-color="#6A46B8"/>
+    </linearGradient>
+    <linearGradient id="head" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F4FAFF"/>
+      <stop offset="100%" stop-color="#CFE6F8"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="1" y="1" width="62" height="62" rx="14" fill="url(#tile)"/>
+
+  <!-- antennae -->
+  <path d="M24 19 18.5 12M40 19 45.5 12" stroke="#E9F4FC" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <circle cx="17.5" cy="10.5" r="3.2" fill="#E9F4FC"/>
+  <circle cx="46.5" cy="10.5" r="3.2" fill="#E9F4FC"/>
+
+  <!-- robot head -->
+  <rect x="13" y="19" width="38" height="32" rx="11" fill="url(#head)"/>
+  <circle cx="25" cy="34" r="5" fill="#17374F"/>
+  <circle cx="39" cy="34" r="5" fill="#17374F"/>
+  <circle cx="26.6" cy="32.4" r="1.6" fill="#FFFFFF"/>
+  <circle cx="40.6" cy="32.4" r="1.6" fill="#FFFFFF"/>
+  <path d="M28 43q4 2.8 8 0" stroke="#17374F" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.7"/>
+
+  <!-- MCP corner tag -->
+  <rect x="35" y="45" width="24" height="13" rx="4.5" fill="#121A24" stroke="#9EC6E8" stroke-width="1.2"/>
+  <text x="47" y="54.6" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="7.4" font-weight="700" letter-spacing="0.5" fill="#E9F4FC">MCP</text>
+</svg>

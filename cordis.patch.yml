@@ -1,0 +1,8 @@
+# godot-mcp-status bundle patch.
+#
+# One Host row: it reads the configured MCP client rows and the live tool
+# registry, then serves the connection state as JSON. The Client half renders
+# the badge in the frame-wide overlay.
+- insert:
+    - id: godot-mcp-status
+      name: '@local/dsh-godot-mcp-status'

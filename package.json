@@ -1,0 +1,60 @@
+{
+  "name": "dsh-godot-mcp-status",
+  "version": "0.1.0",
+  "description": "Shows a small Godot icon with an MCP corner badge in the DeepSeek Harness Web UI while a Godot MCP server is connected, and nothing while it is not.",
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "godot",
+    "mcp",
+    "status",
+    "badge",
+    "overlay"
+  ],
+  "license": "MIT",
+  "engines": {
+    "dsh": ">=0.2.2-rc.1"
+  },
+  "scripts": {
+    "check": "node --check index.js && node --check client.js",
+    "pack:dry": "npm pack --dry-run"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    },
+    "market": {
+      "displayName": "Godot MCP status",
+      "categories": [
+        "ui",
+        "dev"
+      ]
+    }
+  }
+}

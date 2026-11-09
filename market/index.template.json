@@ -1,0 +1,51 @@
+{
+  "format": 1,
+  "title": {
+    "en": "My DSH plugins",
+    "zh": "我的 DSH 插件"
+  },
+  "description": {
+    "en": "A personal index of DeepSeek Harness (dsh) plugins.",
+    "zh": "个人的 DeepSeek Harness（dsh）插件索引。"
+  },
+  "metadata": {
+    "categories": {
+      "ui": {
+        "title": { "en": "UI Enhancements", "zh": "UI 增强" }
+      },
+      "dev": {
+        "title": { "en": "Development & Runtime", "zh": "开发与运行时" }
+      }
+    }
+  },
+  "plugins": [
+    {
+      "name": "dsh-godot-mcp-status",
+      "title": {
+        "en": "Godot MCP status",
+        "zh": "Godot MCP 连接状态"
+      },
+      "description": {
+        "en": "Shows a small Godot icon with an MCP corner tag in the window while DSH is connected to a Godot MCP server, and nothing while it is not. Hover it for the connection hint.",
+        "zh": "连接上 Godot MCP 后，在界面角落显示带 MCP 角标的 Godot 小图标，悬停显示连接提示；未连接时不显示。"
+      },
+      "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0idGlsZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiM0NzhDQkYiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjNkE0NkI4Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJoZWFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0Y0RkFGRiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNDRkU2RjgiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgoKICA8cmVjdCB4PSIxIiB5PSIxIiB3aWR0aD0iNjIiIGhlaWdodD0iNjIiIHJ4PSIxNCIgZmlsbD0idXJsKCN0aWxlKSIvPgoKICA8IS0tIGFudGVubmFlIC0tPgogIDxwYXRoIGQ9Ik0yNCAxOSAxOC41IDEyTTQwIDE5IDQ1LjUgMTIiIHN0cm9rZT0iI0U5RjRGQyIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiLz4KICA8Y2lyY2xlIGN4PSIxNy41IiBjeT0iMTAuNSIgcj0iMy4yIiBmaWxsPSIjRTlGNEZDIi8+CiAgPGNpcmNsZSBjeD0iNDYuNSIgY3k9IjEwLjUiIHI9IjMuMiIgZmlsbD0iI0U5RjRGQyIvPgoKICA8IS0tIHJvYm90IGhlYWQgLS0+CiAgPHJlY3QgeD0iMTMiIHk9IjE5IiB3aWR0aD0iMzgiIGhlaWdodD0iMzIiIHJ4PSIxMSIgZmlsbD0idXJsKCNoZWFkKSIvPgogIDxjaXJjbGUgY3g9IjI1IiBjeT0iMzQiIHI9IjUiIGZpbGw9IiMxNzM3NEYiLz4KICA8Y2lyY2xlIGN4PSIzOSIgY3k9IjM0IiByPSI1IiBmaWxsPSIjMTczNzRGIi8+CiAgPGNpcmNsZSBjeD0iMjYuNiIgY3k9IjMyLjQiIHI9IjEuNiIgZmlsbD0iI0ZGRkZGRiIvPgogIDxjaXJjbGUgY3g9IjQwLjYiIGN5PSIzMi40IiByPSIxLjYiIGZpbGw9IiNGRkZGRkYiLz4KICA8cGF0aCBkPSJNMjggNDNxNCAyLjggOCAwIiBzdHJva2U9IiMxNzM3NEYiIHN0cm9rZS13aWR0aD0iMi4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiIG9wYWNpdHk9IjAuNyIvPgoKICA8IS0tIE1DUCBjb3JuZXIgdGFnIC0tPgogIDxyZWN0IHg9IjM1IiB5PSI0NSIgd2lkdGg9IjI0IiBoZWlnaHQ9IjEzIiByeD0iNC41IiBmaWxsPSIjMTIxQTI0IiBzdHJva2U9IiM5RUM2RTgiIHN0cm9rZS13aWR0aD0iMS4yIi8+CiAgPHRleHQgeD0iNDciIHk9IjU0LjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJTZWdvZSBVSSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNy40IiBmb250LXdlaWdodD0iNzAwIiBsZXR0ZXItc3BhY2luZz0iMC41IiBmaWxsPSIjRTlGNEZDIj5NQ1A8L3RleHQ+Cjwvc3ZnPgo=",
+      "author": "<AUTHOR>",
+      "homepage": "https://github.com/<GITHUB_USER>/dsh-godot-mcp-status#readme",
+      "repository": {
+        "url": "https://github.com/<GITHUB_USER>/dsh-godot-mcp-status"
+      },
+      "metadata": {
+        "category": "ui"
+      },
+      "versions": [
+        {
+          "version": "0.1.0",
+          "publishTimestamp": 1794241861,
+          "source": { "type": "npm" },
+          "engines": { "dsh": ">=0.2.2-rc.1" }
+        }
+      ]
+    }
+  ]
+}

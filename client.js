@@ -25,12 +25,24 @@ window.__ModuleLoader__.load({
       connectedMcp: '已连接上 MCP',
       disconnectedGodot: '未连接上Godot MCP',
       disconnectedMcp: '未连接上 MCP',
+      detectedGodot: '检测到 Godot MCP，尚未配置',
+      panelTitle: '接入 Godot MCP',
+      panelHint: '把下面这段加到 profile 的 cordis.patch.yml，然后重载配置。',
+      copy: '复制',
+      copied: '已复制',
+      close: '关闭',
     }
     const en = {
       connectedGodot: 'Connected to Godot MCP',
       connectedMcp: 'Connected to MCP',
       disconnectedGodot: 'Not connected to Godot MCP',
       disconnectedMcp: 'Not connected to MCP',
+      detectedGodot: 'Godot MCP detected — not configured yet',
+      panelTitle: 'Connect Godot MCP',
+      panelHint: 'Add this to the profile’s cordis.patch.yml, then reload the configuration.',
+      copy: 'Copy',
+      copied: 'Copied',
+      close: 'Close',
     }
 
     const CSS = [
@@ -49,6 +61,19 @@ window.__ModuleLoader__.load({
       '.gmcp-tip[data-place="below"]::after{top:auto;bottom:100%;margin-top:0;margin-bottom:-4px;transform:rotate(225deg)}',
       '.gmcp-tip[data-align="start"]{right:auto;left:-4px}',
       '.gmcp-tip[data-align="start"]::after{right:auto;left:14px}',
+      '.gmcp-badge.is-actionable{cursor:pointer}',
+      '.gmcp-panel{position:absolute;right:-4px;bottom:calc(100% + 10px);z-index:4;box-sizing:border-box;width:300px;max-width:calc(100vw - 24px);padding:10px;border:1px solid var(--dsw-alias-border-l1);border-radius:10px;background:var(--dsw-alias-bg-overlay);color:var(--dsw-alias-label-primary);box-shadow:0 10px 28px rgba(0,0,0,.3);pointer-events:auto;cursor:auto;font:500 12px/17px ui-sans-serif,system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;animation:gmcp-tip-in .14s ease-out both}',
+      '.gmcp-panel[data-place="below"]{bottom:auto;top:calc(100% + 10px)}',
+      '.gmcp-panel[data-align="start"]{right:auto;left:-4px}',
+      '.gmcp-panel-head{display:flex;align-items:center;gap:8px;margin:0 0 6px}',
+      '.gmcp-panel-title{flex:1;font-size:12px;font-weight:600}',
+      '.gmcp-panel-close{flex:none;width:22px;height:22px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--dsw-alias-label-secondary);font:600 14px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer}',
+      '.gmcp-panel-close:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}',
+      '.gmcp-snippet{margin:0 0 8px;padding:8px;border:1px solid var(--dsw-alias-border-l1);border-radius:8px;background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);font:11px/15px ui-monospace,Consolas,"Cascadia Mono",monospace;white-space:pre;overflow:auto;max-height:180px;cursor:text;user-select:text;-webkit-user-select:text}',
+      '.gmcp-panel-hint{margin:0 0 8px;color:var(--dsw-alias-label-secondary);font-size:11px;line-height:15px}',
+      '.gmcp-panel-foot{display:flex;justify-content:flex-end;gap:6px}',
+      '.gmcp-copy{height:26px;padding:0 12px;border:1px solid var(--dsw-alias-border-l2);border-radius:7px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);font:600 12px/24px ui-sans-serif,system-ui,sans-serif;cursor:pointer}',
+      '.gmcp-copy:hover{background:var(--dsw-alias-bg-layer-2)}',
       '@keyframes gmcp-tip-in{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}',
       '@media (prefers-reduced-motion:reduce){.gmcp-badge{transition:none}.gmcp-tip{animation:none}}',
     ].join('')
@@ -82,7 +107,9 @@ window.__ModuleLoader__.load({
     }
 
     function normalize(body) {
-      if (body === null || typeof body !== 'object') return { visible: false, connected: false, servers: [] }
+      if (body === null || typeof body !== 'object') {
+        return { visible: false, connected: false, detectedUrl: null, servers: [] }
+      }
       const servers = Array.isArray(body.servers)
         ? body.servers
             .filter((server) => server !== null && typeof server === 'object' && typeof server.name === 'string')
@@ -92,7 +119,12 @@ window.__ModuleLoader__.load({
               connected: server.connected === true,
             }))
         : []
-      return { visible: body.visible === true, connected: body.connected === true, servers }
+      return {
+        visible: body.visible === true,
+        connected: body.connected === true,
+        detectedUrl: typeof body.detectedUrl === 'string' && body.detectedUrl !== '' ? body.detectedUrl : null,
+        servers,
+      }
     }
 
     /** Poll the Host state route for this component's lifetime. */
@@ -117,7 +149,7 @@ window.__ModuleLoader__.load({
             next = normalize(await response.json())
           } catch {
             // A missing route or a stopped Host half means the editor is not running.
-            next = { visible: false, connected: false, servers: [] }
+            next = { visible: false, connected: false, detectedUrl: null, servers: [] }
           }
           if (!alive) return
           setStatus((previous) => {
@@ -183,13 +215,33 @@ window.__ModuleLoader__.load({
       }
     }
 
+    /** The row a user pastes into the profile when the endpoint is detected but unconfigured. */
+    const SNIPPET_LINES = [
+      '- insert:',
+      '    - id: mcp-godot',
+      "      name: '@deepseek-ai/dsh-mcp-client'",
+      '      config:',
+      '        serverName: godot',
+      '        transport: streamable-http',
+      '        url: __URL__',
+      '        failOnStartupError: false',
+    ]
+
+    function snippetFor(url) {
+      return SNIPPET_LINES.map((line) => line.replace('__URL__', url)).join('\n')
+    }
+
     function GodotMcpBadge(props) {
       const t = props !== null && typeof props.t === 'function' ? props.t : boundT !== null ? boundT : (key) => key
       const status = useStatus()
       const [hovered, setHovered] = React.useState(false)
       const [position, setPosition] = React.useState(() => loadPosition() || defaultPosition())
       const [dragging, setDragging] = React.useState(false)
+      const [panelOpen, setPanelOpen] = React.useState(false)
+      const [copied, setCopied] = React.useState(false)
       const dragRef = React.useRef(null)
+      const rootRef = React.useRef(null)
+      const copyTimerRef = React.useRef(null)
 
       React.useEffect(() => {
         function onResize() {
@@ -199,8 +251,37 @@ window.__ModuleLoader__.load({
         return () => window.removeEventListener('resize', onResize)
       }, [])
 
+      React.useEffect(
+        () => () => {
+          if (copyTimerRef.current !== null) window.clearTimeout(copyTimerRef.current)
+        },
+        [],
+      )
+
+      // The panel closes on an outside press or Escape, like a host popover.
+      React.useEffect(() => {
+        if (!panelOpen) return undefined
+        function onDownOutside(event) {
+          const root = rootRef.current
+          if (root !== null && event.target instanceof Node && root.contains(event.target)) return
+          setPanelOpen(false)
+        }
+        function onKey(event) {
+          if (event.key === 'Escape') setPanelOpen(false)
+        }
+        document.addEventListener('pointerdown', onDownOutside, true)
+        document.addEventListener('keydown', onKey)
+        return () => {
+          document.removeEventListener('pointerdown', onDownOutside, true)
+          document.removeEventListener('keydown', onKey)
+        }
+      }, [panelOpen])
+
       function onPointerDown(event) {
         if (event.button !== undefined && event.button !== 0) return
+        // Presses inside the panel belong to its own buttons, not to the drag.
+        const target = event.target
+        if (target instanceof Element && target.closest('.gmcp-panel') !== null) return
         dragRef.current = {
           pointerId: event.pointerId,
           startX: event.clientX,
@@ -257,26 +338,53 @@ window.__ModuleLoader__.load({
           }
         }
         setDragging(false)
-        if (drag.moved === true) savePosition({ x: drag.x, y: drag.y })
+        if (drag.moved === true) {
+          savePosition({ x: drag.x, y: drag.y })
+        } else if (status !== null && typeof status.detectedUrl === 'string') {
+          // A plain click on an unconfigured endpoint opens the setup snippet.
+          setPanelOpen((open) => !open)
+        }
+      }
+
+      function copySnippet(url) {
+        const text = snippetFor(url)
+        const clipboard = typeof navigator !== 'undefined' ? navigator.clipboard : undefined
+        if (clipboard === undefined || typeof clipboard.writeText !== 'function') return
+        clipboard.writeText(text).then(
+          () => {
+            setCopied(true)
+            if (copyTimerRef.current !== null) window.clearTimeout(copyTimerRef.current)
+            copyTimerRef.current = window.setTimeout(() => setCopied(false), 1600)
+          },
+          () => {
+            /* the snippet stays selectable for a manual copy */
+          },
+        )
       }
 
       if (status === null || status.visible !== true) return null
 
+      const detectedUrl = typeof status.detectedUrl === 'string' ? status.detectedUrl : null
+      const actionable = detectedUrl !== null
       // Naming follows the configured server, whether or not it is connected.
       const names = status.servers.map((server) => server.name)
       const single = names.length === 1 ? names[0] : ''
       const isGodot = single !== '' && single.toLowerCase() === 'godot'
       const connected = status.connected === true
-      const textKey = connected
-        ? isGodot
-          ? 'connectedGodot'
-          : 'connectedMcp'
-        : isGodot
-          ? 'disconnectedGodot'
-          : 'disconnectedMcp'
+      const textKey = actionable
+        ? 'detectedGodot'
+        : connected
+          ? isGodot
+            ? 'connectedGodot'
+            : 'connectedMcp'
+          : isGodot
+            ? 'disconnectedGodot'
+            : 'disconnectedMcp'
       const label = t(textKey)
       const tipBelow = position.y < 76
       const tipFlip = position.x < 150
+      const panelBelow = position.y < 240
+      const panelStart = position.x < 320
 
       return h(
         React.Fragment,
@@ -284,19 +392,32 @@ window.__ModuleLoader__.load({
         h('style', { 'data-godot-mcp-status': 'styles' }, CSS),
         h(
           'div',
-          { className: 'gmcp-seat', style: { left: position.x + 'px', top: position.y + 'px' } },
+          {
+            className: 'gmcp-seat',
+            ref: rootRef,
+            style: { left: position.x + 'px', top: position.y + 'px' },
+          },
           h(
             'div',
             {
-              className: dragging ? 'gmcp-badge is-dragging' : 'gmcp-badge',
-              role: 'status',
+              className:
+                'gmcp-badge' + (dragging ? ' is-dragging' : '') + (actionable ? ' is-actionable' : ''),
+              role: actionable ? 'button' : 'status',
               'aria-label': label,
+              'aria-expanded': actionable ? panelOpen : undefined,
               tabIndex: 0,
               onPointerDown,
               onPointerMove,
               onPointerUp: onPointerEnd,
               onPointerCancel: onPointerEnd,
               onLostPointerCapture: onPointerEnd,
+              onKeyDown: (event) => {
+                if (!actionable || event.target !== event.currentTarget) return
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  setPanelOpen((open) => !open)
+                }
+              },
               onMouseEnter: () => setHovered(true),
               onMouseLeave: () => setHovered(false),
               onFocus: () => setHovered(true),
@@ -309,7 +430,7 @@ window.__ModuleLoader__.load({
               h('span', { className: connected ? 'gmcp-dot is-on' : 'gmcp-dot' }),
               'MCP',
             ),
-            hovered && !dragging
+            hovered && !dragging && !panelOpen
               ? h(
                   'div',
                   {
@@ -319,6 +440,48 @@ window.__ModuleLoader__.load({
                     'data-align': tipFlip ? 'start' : undefined,
                   },
                   label,
+                )
+              : null,
+            panelOpen && actionable
+              ? h(
+                  'div',
+                  {
+                    className: 'gmcp-panel',
+                    role: 'dialog',
+                    'aria-label': t('panelTitle'),
+                    'data-place': panelBelow ? 'below' : undefined,
+                    'data-align': panelStart ? 'start' : undefined,
+                  },
+                  h(
+                    'div',
+                    { className: 'gmcp-panel-head' },
+                    h('span', { className: 'gmcp-panel-title' }, t('panelTitle')),
+                    h(
+                      'button',
+                      {
+                        type: 'button',
+                        className: 'gmcp-panel-close',
+                        'aria-label': t('close'),
+                        onClick: () => setPanelOpen(false),
+                      },
+                      '×',
+                    ),
+                  ),
+                  h('pre', { className: 'gmcp-snippet' }, snippetFor(detectedUrl)),
+                  h('p', { className: 'gmcp-panel-hint' }, t('panelHint')),
+                  h(
+                    'div',
+                    { className: 'gmcp-panel-foot' },
+                    h(
+                      'button',
+                      {
+                        type: 'button',
+                        className: 'gmcp-copy',
+                        onClick: () => copySnippet(detectedUrl),
+                      },
+                      copied ? t('copied') : t('copy'),
+                    ),
+                  ),
                 )
               : null,
           ),

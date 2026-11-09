@@ -67,9 +67,10 @@ The Host half computes both facts on demand and serves them as JSON at
 客户端半边在 `shell.overlay` 注册一个全窗口单点击穿席位，页面打开期间每 2 秒轮询一次，只有
 那 32px 的图标接收鼠标事件。
 
-**没配 MCP 也能装**：插件会正常激活，但什么都不显示——没有 MCP 服务器行就没有可显示的
-状态。进程扫描也只在配置了名字或地址含 `godot` 的服务器时才启用，不会因为你机器上开着别的
-Godot 就冒出一个灰点。
+**没配 MCP 也能装**：插件会正常激活。如果此时 Godot 的 MCP 端点（9080–9083）在监听，角标会
+以灰点出现，气泡提示「检测到 Godot MCP，尚未配置」，点一下弹出可直接复制的
+`cordis.patch.yml` 配置行；探测不到就什么都不显示。进程扫描只在配置了名字或地址含 `godot`
+的服务器时才启用，不会因为你机器上开着别的 Godot 就冒出一个灰点。
 
 A server row comes from the active loader entries whose resolved configuration has a
 `serverName` plus a `stdio` or `streamable-http` transport. Nothing is installed, no
@@ -78,10 +79,12 @@ socket and closes it. The Client half registers a seat in `shell.overlay`
 (frame-wide, click-through) and polls that route every 2 s while the page is open;
 only the 32 px tile opts into pointer events.
 
-**It installs fine without an MCP server**: the plugin activates and shows nothing,
-because there is no MCP server row to report on. The process scan also runs only
-when a configured server's name or URL mentions `godot`, so an unrelated Godot
-editor on the machine never produces a badge.
+**It installs fine without an MCP server**: the plugin activates. If a Godot MCP
+endpoint is listening on 9080–9083, the badge appears with a gray dot and the bubble
+“Godot MCP detected — not configured yet”; clicking it opens a copy-ready
+`cordis.patch.yml` row. When nothing is detected it shows nothing. The process scan
+also runs only when a configured server's name or URL mentions `godot`, so an
+unrelated Godot editor on the machine never produces a badge.
 
 ## 文件 / Files
 

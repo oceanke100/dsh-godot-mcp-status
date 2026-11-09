@@ -1,10 +1,16 @@
 {
   "meta": {
     "title": "Godot MCP 连接状态",
-    "description": "Godot 编辑器启动后，在界面角落显示带 MCP 角标的 Godot 图标；MCP 连接上时角标是蓝点，未连接时是灰点，悬停显示当前状态；Godot 关闭后自动隐藏。"
+    "description": "Godot 编辑器启动后，在界面角落显示带 MCP 角标的 Godot 图标；MCP 连接上时角标是蓝点，未连接时是灰点，悬停显示当前状态；Godot 关闭后自动隐藏。没配置过 Godot MCP 时，检测到端点会给出可直接复制的配置片段。"
   },
   "connectedGodot": "已连接上Godot MCP",
   "connectedMcp": "已连接上 MCP",
   "disconnectedGodot": "未连接上Godot MCP",
-  "disconnectedMcp": "未连接上 MCP"
+  "disconnectedMcp": "未连接上 MCP",
+  "detectedGodot": "检测到 Godot MCP，尚未配置",
+  "panelTitle": "接入 Godot MCP",
+  "panelHint": "把下面这段加到 profile 的 cordis.patch.yml，然后重载配置。",
+  "copy": "复制",
+  "copied": "已复制",
+  "close": "关闭"
 }

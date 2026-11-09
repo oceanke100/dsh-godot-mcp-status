@@ -1,10 +1,16 @@
 {
   "meta": {
     "title": "Godot MCP status",
-    "description": "Shows the Godot icon with an MCP corner tag while the Godot editor is running. The tag's dot is blue when DSH is connected to the MCP server and gray when it is not; hovering shows the state, and the badge disappears when the editor closes."
+    "description": "Shows the Godot icon with an MCP corner tag while the Godot editor is running. The tag's dot is blue when DSH is connected to the MCP server and gray when it is not; hovering shows the state, and the badge disappears when the editor closes. With no Godot MCP configured, a detected endpoint offers a copy-ready configuration row."
   },
   "connectedGodot": "Connected to Godot MCP",
   "connectedMcp": "Connected to MCP",
   "disconnectedGodot": "Not connected to Godot MCP",
-  "disconnectedMcp": "Not connected to MCP"
+  "disconnectedMcp": "Not connected to MCP",
+  "detectedGodot": "Godot MCP detected — not configured yet",
+  "panelTitle": "Connect Godot MCP",
+  "panelHint": "Add this to the profile’s cordis.patch.yml, then reload the configuration.",
+  "copy": "Copy",
+  "copied": "Copied",
+  "close": "Close"
 }

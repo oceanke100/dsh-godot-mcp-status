@@ -26,6 +26,8 @@ const PROBE_TIMEOUT_MS = 1200
 const PROBE_TTL_MS = 2000
 const STATE_TTL_MS = 600
 const EDITOR_SCAN_TTL_MS = 3500
+const DETECT_PORTS = [9080, 9081, 9082, 9083]
+const DETECT_TTL_MS = 5000
 
 /** Read the configured MCP servers from the active loader rows. */
 function readConfiguredServers(ctx) {
@@ -154,6 +156,27 @@ function probe(url) {
 }
 
 let editorScan = { at: 0, running: null }
+let detectCache = { at: 0, url: null }
+
+/**
+ * The addon's Streamable HTTP endpoint defaults to 127.0.0.1:9080; a moved port is
+ * usually one of the next few. Probed only while nothing is configured, so the
+ * badge can hand the user the exact row to add instead of staying silent.
+ */
+async function detectGodotMcp() {
+  if (Date.now() - detectCache.at < DETECT_TTL_MS) return detectCache.url
+
+  let found = null
+  for (const port of DETECT_PORTS) {
+    const url = `http://127.0.0.1:${port}/mcp`
+    if (await probe(url)) {
+      found = url
+      break
+    }
+  }
+  detectCache = { at: Date.now(), url: found }
+  return found
+}
 
 /**
  * Whether a Godot editor process is running on this machine.
@@ -242,15 +265,21 @@ async function computeState(ctx) {
   )
   const editorRunning = godotServer === true ? (listening ? true : await godotEditorRunning()) : null
 
+  // With nothing configured, look for the addon's default endpoint so the badge
+  // can offer the exact row to add instead of staying silent.
+  const detectedUrl = reported.length === 0 ? await detectGodotMcp() : null
+
   // The badge follows the editor, not the MCP server: it stays visible (with a
-  // gray dot) while Godot runs with its MCP server turned off.
-  const visible = reported.length > 0 && (listening || editorRunning === true)
+  // gray dot) while Godot runs with its MCP server turned off. An unconfigured
+  // profile shows the badge only while a candidate endpoint answers.
+  const visible = (reported.length > 0 && (listening || editorRunning === true)) || detectedUrl !== null
 
   return {
     visible,
     connected: reported.some((server) => server.connected === true),
     editorRunning,
     listening,
+    detectedUrl,
     servers: reported,
     checkedAt: Date.now(),
   }
@@ -313,6 +342,7 @@ export function apply(ctx) {
       cachedAt = 0
       probeCache.clear()
       editorScan = { at: 0, running: null }
+      detectCache = { at: 0, url: null }
       try {
         dispose()
       } catch {

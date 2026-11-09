@@ -15,6 +15,7 @@
  * registry supplies the per-server tool counts.
  */
 
+import { execFile } from 'node:child_process'
 import net from 'node:net'
 
 export const name = 'dsh-godot-mcp-status'
@@ -24,6 +25,7 @@ const PREFIX = '/godot-mcp-badge'
 const PROBE_TIMEOUT_MS = 1200
 const PROBE_TTL_MS = 2000
 const STATE_TTL_MS = 600
+const EDITOR_SCAN_TTL_MS = 3500
 
 /** Read the configured MCP servers from the active loader rows. */
 function readConfiguredServers(ctx) {
@@ -151,6 +153,50 @@ function probe(url) {
   })
 }
 
+let editorScan = { at: 0, running: null }
+
+/**
+ * Whether a Godot editor process is running on this machine.
+ *
+ * The badge follows the editor, not the MCP server: turning the server off inside
+ * a running editor must keep the badge on screen with a gray dot. A closed editor
+ * leaves nothing to attach to, so the badge disappears.
+ *
+ * Returns null when the platform cannot be scanned; callers then fall back to the
+ * endpoint probe alone.
+ */
+function godotEditorRunning() {
+  if (Date.now() - editorScan.at < EDITOR_SCAN_TTL_MS) return Promise.resolve(editorScan.running)
+
+  const windows = process.platform === 'win32'
+  const file = windows ? 'tasklist' : 'ps'
+  const args = windows ? ['/FO', 'CSV', '/NH'] : ['-A', '-o', 'comm=']
+  const pattern = windows ? /^"(godot[^"]*)"/i : /(^|\/)(godot[^/\s]*)$/i
+
+  return new Promise((resolve) => {
+    execFile(
+      file,
+      args,
+      { windowsHide: true, timeout: 4000, maxBuffer: 8 * 1024 * 1024 },
+      (error, stdout) => {
+        let running = null
+        if (error === null || error === undefined) {
+          const text = typeof stdout === 'string' ? stdout : String(stdout === undefined || stdout === null ? '' : stdout)
+          running = false
+          for (const line of text.split(/\r?\n/)) {
+            if (pattern.test(line.trim())) {
+              running = true
+              break
+            }
+          }
+        }
+        editorScan = { at: Date.now(), running }
+        resolve(running)
+      },
+    )
+  })
+}
+
 async function computeState(ctx) {
   const servers = readConfiguredServers(ctx)
   const counts = countMcpTools(ctx)
@@ -170,10 +216,9 @@ async function computeState(ctx) {
     const probeable = server.transport === 'streamable-http' && server.url !== ''
     const reachable = probeable ? await probe(server.url) : null
 
-    // `running` is what the badge is shown for: the endpoint (the Godot editor)
-    // answers on its port. A stdio server and an unconfigured row have no port to
-    // probe, so their registered tools are the only evidence available.
-    const running = probeable ? reachable === true : tools > 0
+    // A stdio server and an unconfigured row have no port to probe, so their
+    // registered tools are the only evidence available.
+    const listening = probeable ? reachable === true : tools > 0
 
     reported.push({
       name: server.name,
@@ -181,15 +226,24 @@ async function computeState(ctx) {
       url: server.url,
       tools,
       reachable,
-      running,
-      // The dot turns blue only while DSH itself holds the server's tools.
-      connected: running && tools > 0,
+      listening,
+      // Blue dot: the endpoint answers AND DSH holds that server's tools.
+      connected: tools > 0 && (probeable ? reachable === true : true),
     })
   }
 
+  const listening = reported.some((server) => server.listening === true)
+  // While the endpoint answers, the editor must be running — no scan needed.
+  const editorRunning = listening ? true : await godotEditorRunning()
+  // The badge follows the editor, not the MCP server: it stays visible (with a
+  // gray dot) while Godot runs with its MCP server turned off.
+  const visible = listening || editorRunning === true
+
   return {
-    running: reported.some((server) => server.running === true),
+    visible,
     connected: reported.some((server) => server.connected === true),
+    editorRunning,
+    listening,
     servers: reported,
     checkedAt: Date.now(),
   }
@@ -251,6 +305,7 @@ export function apply(ctx) {
       cached = null
       cachedAt = 0
       probeCache.clear()
+      editorScan = { at: 0, running: null }
       try {
         dispose()
       } catch {

@@ -27,14 +27,16 @@ No configuration. It follows whatever MCP servers the profile has configured.
 The Host half computes both facts on demand and serves them as JSON at
 `/godot-mcp-badge/state.json`. The badge answers two questions separately:
 
-- **Is the editor running?** A TCP probe of the configured endpoint answers it.
-  The badge appears as soon as the editor listens and disappears as soon as it
-  stops, whether or not DSH ever connected.
+- **Is the editor running?** Usually a TCP probe of the configured endpoint answers
+  it, and the badge follows that port. When the port is closed — the MCP server was
+  turned off inside the editor — the Host half scans the process list for a Godot
+  editor (`tasklist` on Windows, `ps` elsewhere, cached for 3.5 s). So the badge
+  stays while the editor is open and disappears when the editor process is gone.
 - **Is DSH connected to it?** The `mcp__<server>__<tool>` definitions in the live
   tool registry answer it. The MCP bridge publishes them only after a successful
   connection and tool discovery, and removes them when the connection is disposed
-  or its reconnect budget is exhausted. That is the dot: blue when the running
-  server contributes tools, gray when it does not.
+  or its reconnect budget is exhausted. That is the dot: blue when the endpoint
+  answers and contributes tools, gray otherwise.
 
 A server row comes from the active loader entries whose resolved configuration has
 a `serverName` plus a `stdio` or `streamable-http` transport. Nothing is
@@ -97,9 +99,10 @@ Godot 编辑器一启动，主界面右下角就出现一个 32px 的 Godot 图�
 Godot logo 由 Andrea Calabró 与 Godot Engine 贡献者创作，采用 CC BY 4.0 许可，
 是 Godot Foundation 的商标，此处仅用于标识 Godot MCP 连接；插件自身代码为 MIT。
 
-判断依据分两件事：一是对配置里的 HTTP 端点做 TCP 探测——端口在监听就显示图标，不
-在就隐藏，与 DSH 是否连上无关；二是数工具注册表里 `mcp__godot__*` 的数量——有工具
-说明 DSH 真的连上了，圆点变蓝，没有就是灰点。
+判断依据分两件事：一是编辑器在不在。MCP 端口开着时直接看端口；端口关了（比如在编辑器里
+把 MCP 插件关掉）就退回进程扫描——Windows 用 `tasklist`、其他平台用 `ps`，找 Godot 编辑器
+进程，缓存 3.5 秒。所以开着编辑器图标就在，关掉编辑器才消失。二是 DSH 连没连上：数工具注
+册表里 `mcp__godot__*` 的数量，有工具且端口在监听，圆点才变蓝，否则是灰点。
 
 安装后需要刷新一次页面才会加载这个 UI。
 

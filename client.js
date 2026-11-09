@@ -2,9 +2,9 @@
  * Client half of the Godot MCP status badge.
  *
  * A frame-wide, click-through seat (`shell.overlay`) that polls the Host half's
- * state route. Renders nothing until DSH reports a live Godot MCP connection, then
- * shows the Godot logo with an "MCP" corner tag; hovering (or focusing) it
- * raises the connection bubble.
+ * state route. Renders nothing unless the Godot editor is running; while it runs,
+ * shows the Godot logo with an MCP tag whose dot is blue when DSH is connected and
+ * gray when it is not, and hovering raises the matching bubble.
  */
 
 window.__ModuleLoader__.load({
@@ -82,17 +82,17 @@ window.__ModuleLoader__.load({
     }
 
     function normalize(body) {
-      if (body === null || typeof body !== 'object') return { running: false, connected: false, servers: [] }
+      if (body === null || typeof body !== 'object') return { visible: false, connected: false, servers: [] }
       const servers = Array.isArray(body.servers)
         ? body.servers
             .filter((server) => server !== null && typeof server === 'object' && typeof server.name === 'string')
             .map((server) => ({
               name: server.name,
-              running: server.running === true,
+              listening: server.listening === true,
               connected: server.connected === true,
             }))
         : []
-      return { running: body.running === true, connected: body.connected === true, servers }
+      return { visible: body.visible === true, connected: body.connected === true, servers }
     }
 
     /** Poll the Host state route for this component's lifetime. */
@@ -117,7 +117,7 @@ window.__ModuleLoader__.load({
             next = normalize(await response.json())
           } catch {
             // A missing route or a stopped Host half means the editor is not running.
-            next = { running: false, connected: false, servers: [] }
+            next = { visible: false, connected: false, servers: [] }
           }
           if (!alive) return
           setStatus((previous) => {
@@ -260,10 +260,10 @@ window.__ModuleLoader__.load({
         if (drag.moved === true) savePosition({ x: drag.x, y: drag.y })
       }
 
-      if (status === null || status.running !== true) return null
+      if (status === null || status.visible !== true) return null
 
-      const live = status.servers.filter((server) => server.running === true)
-      const names = live.map((server) => server.name)
+      // Naming follows the configured server, whether or not it is connected.
+      const names = status.servers.map((server) => server.name)
       const single = names.length === 1 ? names[0] : ''
       const isGodot = single !== '' && single.toLowerCase() === 'godot'
       const connected = status.connected === true

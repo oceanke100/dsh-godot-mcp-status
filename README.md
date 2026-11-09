@@ -1,9 +1,9 @@
 # dsh-godot-mcp-status
 
 A DSH Web UI plugin: while DeepSeek Harness is connected to a Godot MCP server,
-a small Godot robot tile with an **MCP** corner tag stays in the bottom-right of
-the app. Nothing is shown while the connection is absent. Hovering or focusing
-the tile raises the bubble **Connected to Godot MCP** (中文界面：**已连接上Godot MCP**).
+the Godot logo with an **MCP** corner tag stays in the bottom-right of the app.
+Nothing is shown while the connection is absent. Hovering or focusing the tile
+raises the bubble **Connected to Godot MCP** (中文界面：**已连接上Godot MCP**).
 
 It answers one question at a glance: is the editor's MCP server live right now,
 so the agent can actually use `mcp__godot__*` tools?
@@ -48,7 +48,7 @@ into pointer events.
 | File | Role |
 |---|---|
 | `index.js` | Host row: state route and detection |
-| `client.js` | Client module: overlay seat, robot tile, bubble |
+| `client.js` | Client module: overlay seat, Godot logo, bubble |
 | `cordis.patch.yml` | Inserts the Host row |
 | `locale/*.json` | Plugin Manager title/description and badge text |
 | `icon.svg` | Package icon |
@@ -68,15 +68,24 @@ into pointer events.
   when the connected server is `godot`.
 - Placement is `right: 12px; bottom: 30px`, clear of the bottom-right corner
   controls used by other overlay plugins.
-- The robot tile is original artwork drawn for this plugin in the Godot color
-  palette; the official Godot logo is not redistributed here.
+- The in-app mark is the official Godot logo, inlined as SVG paths. The Godot
+  logo is by Andrea Calabró and the Godot Engine contributors, licensed under
+  [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); the logo is a
+  trademark of the Godot Foundation and is used here only to identify a Godot
+  MCP connection. See <https://godotengine.org/press>.
+- This plugin's own code and artwork composition are MIT licensed (see
+  `LICENSE`).
 
 ## 中文
 
 插件名：**Godot MCP 连接状态**。
 
-连上 Godot MCP 后，主界面右下角出现一个 32px 的 Godot 机器人图标，右下角带
-「MCP」角标，鼠标悬停弹出气泡「已连接上Godot MCP」；没连上时完全不显示。
+连上 Godot MCP 后，主界面右下角出现一个 32px 的 Godot 图标（官方 logo，白色描边
++ 引擎蓝），右下角带「MCP」角标，鼠标悬停弹出气泡「已连接上Godot MCP」；没连上时
+完全不显示。
+
+Godot logo 由 Andrea Calabró 与 Godot Engine 贡献者创作，采用 CC BY 4.0 许可，
+是 Godot Foundation 的商标，此处仅用于标识 Godot MCP 连接；插件自身代码为 MIT。
 
 判断依据：读取 profile 里 MCP 客户端行的配置（服务器名、传输方式、端点）、数工具
 注册表里 `mcp__godot__*` 的数量，并对 HTTP 端点做一次 TCP 端口探测。三者同时成立

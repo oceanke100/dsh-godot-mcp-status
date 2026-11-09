@@ -1,7 +1,5 @@
 # dsh-godot-mcp-status · Godot MCP 连接状态
 
-> 每一节先中文、后 English，不用翻到最底部。Each section is 中文 first, English
-> second — no need to scroll to the end.
 
 ## 是什么 / What it is
 
@@ -69,12 +67,21 @@ The Host half computes both facts on demand and serves them as JSON at
 客户端半边在 `shell.overlay` 注册一个全窗口单点击穿席位，页面打开期间每 2 秒轮询一次，只有
 那 32px 的图标接收鼠标事件。
 
+**没配 MCP 也能装**：插件会正常激活，但什么都不显示——没有 MCP 服务器行就没有可显示的
+状态。进程扫描也只在配置了名字或地址含 `godot` 的服务器时才启用，不会因为你机器上开着别的
+Godot 就冒出一个灰点。
+
 A server row comes from the active loader entries whose resolved configuration has a
 `serverName` plus a `stdio` or `streamable-http` transport. Nothing is installed, no
 editor state is written, and the probe opens no MCP session — it only connects a
 socket and closes it. The Client half registers a seat in `shell.overlay`
 (frame-wide, click-through) and polls that route every 2 s while the page is open;
 only the 32 px tile opts into pointer events.
+
+**It installs fine without an MCP server**: the plugin activates and shows nothing,
+because there is no MCP server row to report on. The process scan also runs only
+when a configured server's name or URL mentions `godot`, so an unrelated Godot
+editor on the machine never produces a badge.
 
 ## 文件 / Files
 

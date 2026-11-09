@@ -233,11 +233,18 @@ async function computeState(ctx) {
   }
 
   const listening = reported.some((server) => server.listening === true)
-  // While the endpoint answers, the editor must be running — no scan needed.
-  const editorRunning = listening ? true : await godotEditorRunning()
+
+  // The process fallback only makes sense for a Godot MCP server. A profile with
+  // no MCP row at all (or one that has nothing to do with Godot) stays inert
+  // instead of showing a badge for whatever Godot editor happens to be open.
+  const godotServer = servers.some(
+    (server) => /godot/i.test(server.name) === true || /godot/i.test(server.url) === true,
+  )
+  const editorRunning = godotServer === true ? (listening ? true : await godotEditorRunning()) : null
+
   // The badge follows the editor, not the MCP server: it stays visible (with a
   // gray dot) while Godot runs with its MCP server turned off.
-  const visible = listening || editorRunning === true
+  const visible = reported.length > 0 && (listening || editorRunning === true)
 
   return {
     visible,

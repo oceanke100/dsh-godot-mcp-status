@@ -1,7 +1,7 @@
 {
   "name": "dsh-godot-mcp-status",
   "version": "0.1.0",
-  "description": "Shows a small Godot icon with an MCP corner badge in the DeepSeek Harness Web UI while a Godot MCP server is connected, and nothing while it is not.",
+  "description": "Godot MCP status badge for the DeepSeek Harness Web UI: the Godot logo with a blue/gray connection dot while the editor runs, drag-to-move, and endpoint detection with a copy-ready config row.",
   "type": "module",
   "main": "./index.js",
   "exports": {
@@ -29,7 +29,16 @@
     "badge",
     "overlay"
   ],
+  "author": "oceanke100",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oceanke100/dsh-godot-mcp-status.git"
+  },
+  "homepage": "https://github.com/oceanke100/dsh-godot-mcp-status#readme",
+  "bugs": {
+    "url": "https://github.com/oceanke100/dsh-godot-mcp-status/issues"
+  },
   "engines": {
     "dsh": ">=0.2.2-rc.1"
   },

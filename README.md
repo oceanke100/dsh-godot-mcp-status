@@ -1,5 +1,7 @@
 # dsh-godot-mcp-status · Godot MCP 连接状态
 
+> 每一节先中文、后 English，不用翻到最底部。Each section is 中文 first, English
+> second — no need to scroll to the end.
 
 ## 是什么 / What it is
 
@@ -21,14 +23,14 @@ live right now, so the agent can actually use `mcp__godot__*` tools?
 ## 安装 / Install
 
 - 市场：在 **设置 → 插件 → 发现** 里添加列出本插件的索引源，然后从卡片安装。发布后本仓库
-  自带索引位于 `https://<GITHUB_USER>.github.io/dsh-godot-mcp-status/index.json`。
+  自带索引位于 `https://oceanke100.github.io/dsh-godot-mcp-status/index.json`。
 - npm：发布后直接用包名 `dsh-godot-mcp-status` 安装。
 - 本地目录：用插件管理器（`install_bundle`）指向本仓库根目录。
 - 装完刷新一次页面：角标是客户端模块，已打开的页面要重新加载才会出现。
 
 - Market: add the index that lists this package under **Settings → Plugins →
   Discover**, then install it. Once published, this repository's own index lives at
-  `https://<GITHUB_USER>.github.io/dsh-godot-mcp-status/index.json`.
+  `https://oceanke100.github.io/dsh-godot-mcp-status/index.json`.
 - npm: install the package name `dsh-godot-mcp-status` once published.
 - Folder: point the Plugin Manager (`install_bundle`) at this repository root.
 - Reload the page once: the badge is a Client module, so an open page needs a
@@ -102,13 +104,15 @@ unrelated Godot editor on the machine never produces a badge.
 ## 环境要求 / Requirements
 
 - DSH `>= 0.2.2-rc.1`，Web 平台（桌面版或浏览器）。
-- profile 里已经有 Godot 的 MCP 客户端行，例如 `@deepseek-ai/dsh-mcp-client`，`serverName`
-  为 `godot`，`transport` 为 `streamable-http`。
+- 想看到蓝点的话，profile 里要有 Godot 的 MCP 客户端行，例如
+  `@deepseek-ai/dsh-mcp-client`，`serverName` 为 `godot`，`transport` 为
+  `streamable-http`。没配也能装，这时插件只负责检测端点并给出配置片段。
 
 - DSH `>= 0.2.2-rc.1`, Web platform (Desktop or browser).
-- A profile that already has an MCP client row for Godot, for example
+- For the blue dot, a profile with a Godot MCP client row — for example
   `@deepseek-ai/dsh-mcp-client` with `serverName: godot` and
-  `transport: streamable-http`.
+  `transport: streamable-http`. Without one the plugin still installs and only
+  detects the endpoint and offers the row.
 
 ## 说明与许可 / Notes & license
 

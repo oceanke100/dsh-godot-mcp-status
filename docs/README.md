@@ -5,15 +5,15 @@ This folder is the plugin's own market index. DSH reads the one JSON file,
 under **Settings → Plugins → Discover → Add index source** and install the
 plugin from the card. GitHub Pages can serve this folder as-is.
 
-## Fill in before publishing
+## Values
 
-`index.json` carries three placeholders:
+`index.json` already names this repository and its author:
 
-| Field | Replace with |
+| Field | Value |
 |---|---|
-| `plugins[0].author` | your name or handle |
-| `plugins[0].homepage`, `plugins[0].repository.url` | your repository URL (replace `<GITHUB_USER>`) |
-| `plugins[0].versions[0].publishTimestamp` | the npm publish time in Unix seconds |
+| `plugins[0].author` | `oceanke100` |
+| `plugins[0].homepage`, `plugins[0].repository.url` | `https://github.com/oceanke100/dsh-godot-mcp-status` |
+| `plugins[0].versions[0].publishTimestamp` | the npm publish time (Unix seconds); update it for every release |
 
 `versions[0].version` must equal `package.json`'s `version`, and `engines.dsh`
 must match the package. Add a new object to `versions` for every release.
@@ -24,7 +24,7 @@ must match the package. Add a new object to `versions` for every release.
 2. **Settings → Pages → Build and deployment → Deploy from a branch**:
    branch `main`, folder `/docs`, then **Save**.
 3. After the first build the index answers at
-   `https://<GITHUB_USER>.github.io/dsh-godot-mcp-status/index.json`.
+   `https://oceanke100.github.io/dsh-godot-mcp-status/index.json`.
 
 ## Check
 

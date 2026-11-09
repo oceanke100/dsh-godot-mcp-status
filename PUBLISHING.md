@@ -26,13 +26,13 @@ engines.dsh                  identical in package.json and the index entry
    `package.json`; if the name `dsh-godot-mcp-status` is taken on npm, rename it in
    `package.json`, `client.js` (`window.__ModuleLoader__.load({ id })`),
    `index.js` (`export const name`) and `cordis.patch.yml` (the row's `name`).
-2. **Index** — fill the `<GITHUB_USER>`, `<AUTHOR>` and `publishTimestamp`
-   placeholders in `docs/index.json` (see `docs/README.md`).
+2. **Index** — `docs/index.json` already names this repository; set
+   `publishTimestamp` to the npm publish time (see `docs/README.md`).
 3. **GitHub** — create the repository, then:
 
    ```sh
-   cd E:\dsh-plugins\dsh-godot-mcp-status
-   git remote add origin https://github.com/<GITHUB_USER>/dsh-godot-mcp-status.git
+   cd dsh-godot-mcp-status
+   git remote add origin https://github.com/oceanke100/dsh-godot-mcp-status.git
    git push -u origin main
    ```
 
@@ -46,7 +46,7 @@ engines.dsh                  identical in package.json and the index entry
 
 5. **Pages** — **Settings → Pages → Deploy from a branch → main / `/docs`**.
    The index URL becomes
-   `https://<GITHUB_USER>.github.io/dsh-godot-mcp-status/index.json`.
+   `https://oceanke100.github.io/dsh-godot-mcp-status/index.json`.
 
 6. **Community index** (optional) — the community catalog lists plugins it has
    accepted; submit the same entry from `docs/index.json` following that
@@ -83,6 +83,6 @@ check the version and source before installing. A local install still works with
   `git` entry for the same `name` splits the version history and confuses the
   upgrade state.
 - A user who cannot reach npm can still install from a commit:
-  `git+https://github.com/<GITHUB_USER>/dsh-godot-mcp-status.git#<40-char-sha>`.
+  `git+https://github.com/oceanke100/dsh-godot-mcp-status.git#<40-char-sha>`.
 - The index is third-party content: the installed package's own manifest decides
   what runs, so keep the two in sync rather than trusting the index.

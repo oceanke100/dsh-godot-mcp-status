@@ -15,7 +15,7 @@ window.__ModuleLoader__.load({
 
     const NS = 'godot-mcp-status'
     const STATE_URL = '/godot-mcp-badge/state.json'
-    const POLL_MS = 2500
+    const POLL_MS = 2000
 
     /** Bound once in `apply`; the seat's `t` prop takes priority when present. */
     let boundT = null
@@ -23,10 +23,14 @@ window.__ModuleLoader__.load({
     const zh = {
       connectedGodot: '已连接上Godot MCP',
       connectedMcp: '已连接上 MCP',
+      disconnectedGodot: '未连接上Godot MCP',
+      disconnectedMcp: '未连接上 MCP',
     }
     const en = {
       connectedGodot: 'Connected to Godot MCP',
       connectedMcp: 'Connected to MCP',
+      disconnectedGodot: 'Not connected to Godot MCP',
+      disconnectedMcp: 'Not connected to MCP',
     }
 
     const CSS = [
@@ -36,7 +40,9 @@ window.__ModuleLoader__.load({
       '.gmcp-badge.is-dragging{cursor:grabbing;transform:none;box-shadow:0 8px 22px rgba(0,0,0,.32);transition:none}',
       '.gmcp-badge:focus-visible{box-shadow:0 0 0 2px var(--dsw-alias-brand-primary)}',
       '.gmcp-mark{display:block;width:25px;height:16px}',
-      '.gmcp-tag{position:absolute;right:-7px;bottom:-6px;box-sizing:border-box;height:12px;padding:0 3px;border-radius:5px;background:linear-gradient(135deg,#478CBF,#6A46B8);color:#fff;font:700 7px/12px ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.06em;box-shadow:0 0 0 1px var(--dsw-alias-bg-overlay);pointer-events:none}',
+      '.gmcp-tag{position:absolute;right:-7px;bottom:-6px;box-sizing:border-box;display:inline-flex;align-items:center;gap:3px;height:12px;padding:0 4px 0 3px;border-radius:5px;background:linear-gradient(135deg,#478CBF,#6A46B8);color:#fff;font:700 7px/12px ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.06em;box-shadow:0 0 0 1px var(--dsw-alias-bg-overlay);pointer-events:none}',
+      '.gmcp-dot{display:block;flex:none;width:5px;height:5px;border-radius:50%;background:#98a1ac;box-shadow:0 0 0 1px rgba(12,18,26,.4);transition:background .15s ease,box-shadow .15s ease}',
+      '.gmcp-dot.is-on{background:#5cc8ff;box-shadow:0 0 0 1px rgba(12,18,26,.4),0 0 5px rgba(92,200,255,.9)}',
       '.gmcp-tip{position:absolute;right:-4px;bottom:calc(100% + 9px);z-index:2;white-space:nowrap;padding:5px 9px;border:1px solid var(--dsw-alias-border-l1);border-radius:8px;background:var(--dsw-alias-bg-overlay);color:var(--dsw-alias-label-primary);font:500 12px/17px ui-sans-serif,system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.24);pointer-events:none;animation:gmcp-tip-in .14s ease-out both}',
       '.gmcp-tip::after{content:"";position:absolute;right:14px;top:100%;width:7px;height:7px;margin-top:-4px;transform:rotate(45deg);border-right:1px solid var(--dsw-alias-border-l1);border-bottom:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-overlay)}',
       '.gmcp-tip[data-place="below"]{bottom:auto;top:calc(100% + 9px)}',
@@ -76,17 +82,17 @@ window.__ModuleLoader__.load({
     }
 
     function normalize(body) {
-      if (body === null || typeof body !== 'object') return { connected: false, servers: [] }
+      if (body === null || typeof body !== 'object') return { running: false, connected: false, servers: [] }
       const servers = Array.isArray(body.servers)
-        ? body.servers.filter(
-            (server) =>
-              server !== null &&
-              typeof server === 'object' &&
-              typeof server.name === 'string' &&
-              server.connected === true,
-          )
+        ? body.servers
+            .filter((server) => server !== null && typeof server === 'object' && typeof server.name === 'string')
+            .map((server) => ({
+              name: server.name,
+              running: server.running === true,
+              connected: server.connected === true,
+            }))
         : []
-      return { connected: body.connected === true, servers }
+      return { running: body.running === true, connected: body.connected === true, servers }
     }
 
     /** Poll the Host state route for this component's lifetime. */
@@ -110,17 +116,14 @@ window.__ModuleLoader__.load({
             if (!response.ok) throw new Error('HTTP ' + response.status)
             next = normalize(await response.json())
           } catch {
-            // A missing route or a stopped Host half is simply "not connected".
-            next = { connected: false, servers: [] }
+            // A missing route or a stopped Host half means the editor is not running.
+            next = { running: false, connected: false, servers: [] }
           }
           if (!alive) return
           setStatus((previous) => {
             if (previous === null) return next
-            const same =
-              previous.connected === next.connected &&
-              previous.servers.length === next.servers.length &&
-              previous.servers.every((server, index) => server.name === next.servers[index].name)
-            return same ? previous : next
+            // Only the visible facts matter; avoids a re-render per poll.
+            return JSON.stringify(previous) === JSON.stringify(next) ? previous : next
           })
           timer = window.setTimeout(tick, POLL_MS)
         }
@@ -257,11 +260,21 @@ window.__ModuleLoader__.load({
         if (drag.moved === true) savePosition({ x: drag.x, y: drag.y })
       }
 
-      if (status === null || status.connected !== true) return null
+      if (status === null || status.running !== true) return null
 
-      const names = status.servers.map((server) => server.name)
+      const live = status.servers.filter((server) => server.running === true)
+      const names = live.map((server) => server.name)
       const single = names.length === 1 ? names[0] : ''
-      const label = single !== '' && single.toLowerCase() === 'godot' ? t('connectedGodot') : t('connectedMcp')
+      const isGodot = single !== '' && single.toLowerCase() === 'godot'
+      const connected = status.connected === true
+      const textKey = connected
+        ? isGodot
+          ? 'connectedGodot'
+          : 'connectedMcp'
+        : isGodot
+          ? 'disconnectedGodot'
+          : 'disconnectedMcp'
+      const label = t(textKey)
       const tipBelow = position.y < 76
       const tipFlip = position.x < 150
 
@@ -290,7 +303,12 @@ window.__ModuleLoader__.load({
               onBlur: () => setHovered(false),
             },
             h(GodotMark),
-            h('span', { className: 'gmcp-tag', 'aria-hidden': 'true' }, 'MCP'),
+            h(
+              'span',
+              { className: 'gmcp-tag', 'aria-hidden': 'true' },
+              h('span', { className: connected ? 'gmcp-dot is-on' : 'gmcp-dot' }),
+              'MCP',
+            ),
             hovered && !dragging
               ? h(
                   'div',

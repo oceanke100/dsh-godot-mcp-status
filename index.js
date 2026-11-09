@@ -1,18 +1,18 @@
 /**
  * Host half of the Godot MCP status badge.
  *
- * Reports whether DSH currently has a live MCP connection, using two facts it can
- * read from the running harness:
+ * Reports two separate facts, because the badge answers two questions:
  *
- *  1. Which MCP servers are configured — the active loader rows whose resolved
- *     configuration carries an MCP client shape (server name, transport, endpoint).
- *  2. Whether that server's tools are registered — the MCP bridge publishes
- *     `mcp__<server>__<tool>` only after a successful connection and discovery, and
- *     removes them when the connection is disposed or its reconnect budget runs out.
+ *  - `running`: is the MCP endpoint up? The Streamable HTTP probe answers this, so
+ *    the badge appears as soon as the Godot editor starts listening and disappears
+ *    as soon as it stops — independent of whether DSH is connected.
+ *  - `connected`: does DSH hold that server's tools? The MCP bridge publishes
+ *    `mcp__<server>__<tool>` only after a successful connection and discovery, and
+ *    removes them when the connection is disposed or its reconnect budget runs out.
  *
- * For Streamable HTTP servers it also probes the endpoint's TCP port, so the badge
- * disappears within one poll after the editor stops listening instead of waiting for
- * the reconnect budget to expire.
+ * Server rows come from the active loader entries whose resolved configuration
+ * carries an MCP client shape (server name, transport, endpoint); the live tool
+ * registry supplies the per-server tool counts.
  */
 
 import net from 'node:net'
@@ -22,8 +22,8 @@ export const inject = ['tools', 'webServer']
 
 const PREFIX = '/godot-mcp-badge'
 const PROBE_TIMEOUT_MS = 1200
-const PROBE_TTL_MS = 3000
-const STATE_TTL_MS = 700
+const PROBE_TTL_MS = 2000
+const STATE_TTL_MS = 600
 
 /** Read the configured MCP servers from the active loader rows. */
 function readConfiguredServers(ctx) {
@@ -167,23 +167,28 @@ async function computeState(ctx) {
   const reported = []
   for (const server of servers) {
     const tools = counts.get(server.name) || 0
-    let reachable = null
-    if (server.transport === 'streamable-http' && server.url !== '') {
-      reachable = await probe(server.url)
-    }
+    const probeable = server.transport === 'streamable-http' && server.url !== ''
+    const reachable = probeable ? await probe(server.url) : null
+
+    // `running` is what the badge is shown for: the endpoint (the Godot editor)
+    // answers on its port. A stdio server and an unconfigured row have no port to
+    // probe, so their registered tools are the only evidence available.
+    const running = probeable ? reachable === true : tools > 0
+
     reported.push({
       name: server.name,
       transport: server.transport,
       url: server.url,
       tools,
       reachable,
-      // Tools without a probe result are the only evidence available for stdio
-      // servers; HTTP servers must also answer on their port.
-      connected: tools > 0 && reachable !== false,
+      running,
+      // The dot turns blue only while DSH itself holds the server's tools.
+      connected: running && tools > 0,
     })
   }
 
   return {
+    running: reported.some((server) => server.running === true),
     connected: reported.some((server) => server.connected === true),
     servers: reported,
     checkedAt: Date.now(),

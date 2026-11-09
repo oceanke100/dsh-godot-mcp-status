@@ -5,4 +5,4 @@
 # the badge in the frame-wide overlay.
 - insert:
     - id: godot-mcp-status
-      name: '@local/dsh-godot-mcp-status'
+      name: 'dsh-godot-mcp-status'

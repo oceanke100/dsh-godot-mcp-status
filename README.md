@@ -14,7 +14,9 @@ so the agent can actually use `mcp__godot__*` tools?
 ## Install
 
 - From a market: add the index that lists this package in **Settings → Plugins →
-  Discover**, then install it.
+  Discover**, then install it. Once published, this repository's own index lives
+  at `https://<GITHUB_USER>.github.io/dsh-godot-mcp-status/index.json`.
+- From npm: install the package name from the Plugin Manager once published.
 - From a folder: install the package directory with the Plugin Manager
   (`install_bundle`), e.g. this repository root.
 - Then reload the page once: the badge is a Client module, so an already open
@@ -56,8 +58,9 @@ into pointer events.
 | `cordis.patch.yml` | Inserts the Host row |
 | `locale/*.json` | Plugin Manager title/description and badge text |
 | `icon.svg` | Package icon |
-| `market/index.template.json` | Self-hostable market index to fill in before publishing |
-| `PUBLISHING.md` | How to publish and list the plugin |
+| `docs/index.json` | Market index served by GitHub Pages; fill in the placeholders before publishing |
+| `docs/README.md` | How to fill and deploy that index |
+| `PUBLISHING.md` | The three publishing layers, in order |
 
 ## Requirements
 

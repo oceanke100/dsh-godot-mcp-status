@@ -47,9 +47,11 @@
       "versions": [
         {
           "version": "0.1.0",
-          "publishTimestamp": 1794244154,
+          "publishTimestamp": 1794245155,
           "source": {
-            "type": "npm"
+            "type": "git",
+            "url": "https://github.com/oceanke100/dsh-godot-mcp-status",
+            "commit": "2c266635ef6a745859d24b0c24b0f46ad0444113"
           },
           "engines": {
             "dsh": ">=0.2.2-rc.1"

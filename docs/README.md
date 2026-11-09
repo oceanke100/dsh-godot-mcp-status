@@ -13,7 +13,8 @@ plugin from the card. GitHub Pages can serve this folder as-is.
 |---|---|
 | `plugins[0].author` | `oceanke100` |
 | `plugins[0].homepage`, `plugins[0].repository.url` | `https://github.com/oceanke100/dsh-godot-mcp-status` |
-| `plugins[0].versions[0].publishTimestamp` | the npm publish time (Unix seconds); update it for every release |
+| `plugins[0].versions[0].source` | `git`, with the commit the release was built from (`git rev-parse HEAD`) |
+| `plugins[0].versions[0].publishTimestamp` | the release time (Unix seconds); update it for every release |
 
 `versions[0].version` must equal `package.json`'s `version`, and `engines.dsh`
 must match the package. Add a new object to `versions` for every release.

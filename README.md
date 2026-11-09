@@ -23,14 +23,14 @@ live right now, so the agent can actually use `mcp__godot__*` tools?
 
 - 市场：在 **设置 → 插件 → 发现** 里添加列出本插件的索引源，然后从卡片安装。发布后本仓库
   自带索引位于 `https://oceanke100.github.io/dsh-godot-mcp-status/index.json`。
-- npm：发布后直接用包名 `dsh-godot-mcp-status` 安装。
+- npm：发布到 npm 后可直接用包名 `dsh-godot-mcp-status` 安装（当前 0.1.0 走 Git 源）。
 - 本地目录：用插件管理器（`install_bundle`）指向本仓库根目录。
 - 装完刷新一次页面：角标是客户端模块，已打开的页面要重新加载才会出现。
 
 - Market: add the index that lists this package under **Settings → Plugins →
   Discover**, then install it. Once published, this repository's own index lives at
   `https://oceanke100.github.io/dsh-godot-mcp-status/index.json`.
-- npm: install the package name `dsh-godot-mcp-status` once published.
+- From the repository: `git+https://github.com/oceanke100/dsh-godot-mcp-status.git#<commit>` — the pinned source the index lists (an npm package name replaces it once one exists).
 - Folder: point the Plugin Manager (`install_bundle`) at this repository root.
 - Reload the page once: the badge is a Client module, so an open page needs a
   refresh.
